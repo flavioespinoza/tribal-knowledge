@@ -8,6 +8,12 @@ TypeScript file watcher that OCRs Slack screenshots, extracts conversation text 
 tribal-knowledge/
 ├── README.md
 ├── .gitignore
+├── .prettierrc
+├── tsconfig.json
+├── package.json
+├── package-lock.json
+├── src/
+│   └── app.css
 ├── .claude/
 │   ├── CLAUDE.md
 │   └── settings.json

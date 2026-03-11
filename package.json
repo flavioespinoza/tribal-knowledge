@@ -1,0 +1,30 @@
+{
+  "name": "tribal-knowledge",
+  "version": "1.0.0",
+  "description": "TypeScript file watcher that OCRs Slack screenshots, extracts conversation text via Google Cloud Vision, summarizes via Gemini 1.5 Pro, and writes structured markdown files. Runs as a launchd daemon per-project.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flavioespinoza/tribal-knowledge.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/flavioespinoza/tribal-knowledge/issues"
+  },
+  "homepage": "https://github.com/flavioespinoza/tribal-knowledge#readme",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.2.1",
+    "@trivago/prettier-plugin-sort-imports": "^6.0.2",
+    "prettier": "^3.8.1",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "tailwindcss": "^4.2.1",
+    "typescript": "^5.9.3"
+  }
+}
