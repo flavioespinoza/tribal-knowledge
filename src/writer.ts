@@ -1,6 +1,8 @@
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { AnalysisResult } from "./analyze.js";
+
+const MASTER_REPORT = "README__tribal-knowledge.md";
 
 /**
  * Generates a markdown filename from the image filename.
@@ -111,4 +113,48 @@ export async function writeMarkdown(
 
   const heading = firstSectionHeading(analysis);
   return { filePath, heading };
+}
+
+/**
+ * Appends an entry to the master report (README__tribal-knowledge.md).
+ * Replaces the "No entries yet" placeholder on first run.
+ */
+export async function updateMasterReport(
+  outputDir: string,
+  analysis: AnalysisResult,
+  imagePath: string,
+  mdPath: string
+): Promise<void> {
+  const reportPath = path.join(outputDir, MASTER_REPORT);
+  const mdFile = path.basename(mdPath);
+  const imgFile = path.basename(imagePath);
+  const date = new Date().toISOString().split("T")[0];
+
+  const entry = `| ${date} | [${analysis.topic}](${mdFile}) | ${analysis.authors.join(", ")} | \`${imgFile}\` |`;
+
+  let content: string;
+  try {
+    content = await readFile(reportPath, "utf-8");
+  } catch {
+    content = `# Tribal Knowledge — Master Report\n\n> Auto-updated by the Tribal Knowledge Chief.\n\n## Entries\n\n_No entries yet. Drop a screenshot into \`images/\` to get started._\n`;
+  }
+
+  // Replace placeholder or append to table
+  if (content.includes("_No entries yet")) {
+    const table = [
+      "| Date | Topic | Authors | Source Image |",
+      "|------|-------|---------|--------------|",
+      entry,
+    ].join("\n");
+    content = content.replace(
+      /_No entries yet\. Drop a screenshot into `images\/` to get started\._/,
+      table
+    );
+  } else {
+    // Append row to existing table
+    content = content.trimEnd() + "\n" + entry + "\n";
+  }
+
+  await writeFile(reportPath, content, "utf-8");
+  console.log(`[writer] Updated master report: ${reportPath}`);
 }
