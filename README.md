@@ -12,9 +12,11 @@ tribal-knowledge/
 │   ├── analyze.ts        # Stage 2 — Gemini 1.5 Pro analysis
 │   ├── preprocess.ts     # Image preprocessing (compression >10MB)
 │   ├── writer.ts         # Markdown output writer
-│   └── alert.ts          # Post-processing alerts + clipboard
+│   ├── alert.ts          # Post-processing alerts + clipboard
+│   └── app.css           # Tailwind v4 styles
 ├── images/               # Drop screenshots here (watched directory)
 ├── run.sh                # Launchd daemon wrapper
+├── .prettierrc
 ├── package.json
 ├── tsconfig.json
 ├── _specs/
