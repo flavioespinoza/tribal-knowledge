@@ -1,14 +1,16 @@
 import chokidar from "chokidar";
+import { rename, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { preprocessImage } from "./preprocess.js";
 import { extractText } from "./ocr.js";
 import { analyzeText } from "./analyze.js";
-import { writeMarkdown } from "./writer.js";
+import { writeMarkdown, updateMasterReport } from "./writer.js";
 import { fireAlert, copyToClipboard } from "./alert.js";
 
 // Project root — images/ is the watch dir, output goes to tribal-knowledge/
 const PROJECT_ROOT = path.resolve(process.cwd());
 const IMAGES_DIR = path.join(PROJECT_ROOT, "images");
+const IMAGES_DONE_DIR = path.join(IMAGES_DIR, "done");
 const OUTPUT_DIR = PROJECT_ROOT;
 
 const SUPPORTED_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".webp"]);
@@ -50,6 +52,15 @@ async function processImage(imagePath: string): Promise<void> {
       imagePath,
       OUTPUT_DIR
     );
+
+    // Move processed image to done/
+    await mkdir(IMAGES_DONE_DIR, { recursive: true });
+    const donePath = path.join(IMAGES_DONE_DIR, path.basename(imagePath));
+    await rename(imagePath, donePath);
+    console.log(`[pipeline] Moved image to: ${donePath}`);
+
+    // Update master report
+    await updateMasterReport(OUTPUT_DIR, analysis, imagePath, filePath);
 
     // Post-processing: alert + clipboard
     await fireAlert(imagePath, filePath);
