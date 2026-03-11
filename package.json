@@ -1,0 +1,23 @@
+{
+  "name": "tribal-knowledge",
+  "version": "1.0.0",
+  "description": "TypeScript file watcher that OCRs Slack screenshots and writes structured markdown via Google Cloud Vision + Gemini 1.5 Pro",
+  "type": "module",
+  "main": "dist/watcher.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "start": "node dist/watcher.js",
+    "dev": "tsx src/watcher.ts"
+  },
+  "dependencies": {
+    "@google-cloud/vision": "^4.3.2",
+    "@google/genai": "^1.0.0",
+    "chokidar": "^4.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
