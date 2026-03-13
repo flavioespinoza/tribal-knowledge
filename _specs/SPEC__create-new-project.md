@@ -1,10 +1,6 @@
 # SPEC: Template — New Project
 
-v6 | Mar 11 2026 - 11:55 PM (MST)
-
-> Forked from Keymaster spec. Updated with Tribal Knowledge install step.
-
----
+v5 | Mar 11 2026 - 11:30 PM (MST)
 
 ## Purpose
 
@@ -47,6 +43,7 @@ Before building anything, get answers to ALL of these:
 | 3 | What are the deliverables? (code review, task creation, model eval, etc.) | Directory structure depends on this |
 | 4 | What are the unique requirements? (timing, format, special rules) | Every project has different rules |
 | 5 | Are there existing files or repos to pull from? | Don't start from scratch if prior work exists |
+| ~~6~~ | ~~Public or private repo?~~ | **ALWAYS PRIVATE — removed, no longer asked** |
 
 ---
 
@@ -98,10 +95,10 @@ npm install -D typescript prettier @trivago/prettier-plugin-sort-imports tailwin
 }
 ```
 
-- Tabs, single quotes, no semicolons, no trailing commas, print width 100
-- Import sorting via `@trivago/prettier-plugin-sort-imports` — always included
-- Tailwind class sorting via `prettier-plugin-tailwindcss` — always included
-- Do NOT deviate from this config — it is the standard for all projects
+- ✅ Tabs, single quotes, no semicolons, no trailing commas, print width 100
+- ✅ Import sorting via `@trivago/prettier-plugin-sort-imports` — always included
+- ✅ Tailwind class sorting via `prettier-plugin-tailwindcss` — always included
+- ❌ Do NOT deviate from this config — it is the standard for all projects
 
 **`src/app.css`** — base Tailwind v4 entry point:
 
@@ -109,8 +106,8 @@ npm install -D typescript prettier @trivago/prettier-plugin-sort-imports tailwin
 @import "tailwindcss";
 ```
 
-- Tailwind v4 uses `@import "tailwindcss"` — no `@tailwind base/components/utilities` directives
-- Project-specific `@theme` blocks go below the import (see Palette section for frontend projects)
+- ✅ Tailwind v4 uses `@import "tailwindcss"` — no `@tailwind base/components/utilities` directives
+- ✅ Project-specific `@theme` blocks go below the import (see Palette section for frontend projects)
 
 **`tsconfig.json`** — standard config for every project:
 
@@ -136,10 +133,10 @@ npm install -D typescript prettier @trivago/prettier-plugin-sort-imports tailwin
 }
 ```
 
-- Strict mode, ES2020 target, ESNext modules
-- `outDir: "dist"`, `rootDir: "src"` — every project compiles from `src/` to `dist/`
-- For frontend projects, add `"DOM"`, `"DOM.Iterable"` to `lib`, add `"jsx": "react-jsx"`, and remove `outDir`/`rootDir` (Vite handles it)
-- Project-specific path aliases go in `paths` as needed
+- ✅ Strict mode, ES2020 target, ESNext modules
+- ✅ `outDir: "dist"`, `rootDir: "src"` — every project compiles from `src/` to `dist/`
+- ✅ For frontend projects, add `"DOM"`, `"DOM.Iterable"` to `lib`, add `"jsx": "react-jsx"`, and remove `outDir`/`rootDir` (Vite handles it)
+- ✅ Project-specific path aliases go in `paths` as needed
 
 **After setup, every new project has these files at root:**
 
@@ -159,7 +156,7 @@ Every project's README must include a link at the top to **Flavio's Preferred Id
 
 ### Required Structure
 
-```
+```txt
 dlfn-task/
 ├── README.md                                                # Commandment #17 template + Step 2 answers
 ├── .gitignore                                               # Commandment #17 template
@@ -175,21 +172,14 @@ dlfn-task/
 │   └── doc__onboarding--dlfn.md                             # unique requirements from Step 7
 ├── _notes/                                                  # Flavio's notes — HANDS OFF unless told
 ├── _specs/                                                  # project specs (SPEC__{name}.md)
-└── tribal-knowledge/                                        # Installed via install.sh — OCR pipeline
-    ├── src/                                                 # Watcher source (TypeScript)
-    ├── dist/                                                # Compiled JS (gitignored)
-    ├── node_modules/                                        # Dependencies (gitignored)
-    ├── install.sh                                           # Per-project installer
-    ├── run.sh                                               # Launchd daemon wrapper
-    ├── package.json                                         # Dependencies + scripts
-    ├── tsconfig.json                                        # TypeScript config
-    ├── README__tribal-knowledge.md                          # Master report (auto-updated by chief)
-    ├── images/                                              # Drop screenshots here
-    │   ├── done/                                            # Chief moves processed images here
-    │   │   └── tribal__docker-fix--2026-02-08.png           # Archived after processing
-    │   └── tribal__api-key--2026-02-09.png                  # Pending — chief hasn't processed yet
-    ├── tribal__docker-fix--2026-02-08.md                    # Output — matches image name (.md ext)
-    └── tribal__api-key--2026-02-09.md                       # Output — matches image name (.md ext)
+└── tribal-knowledge/                                        # Slack screenshots, undocumented tips
+    ├── README__tribal-knowledge.md                          # master report (the chief updates this)
+    ├── images/                                              # drop screenshots here
+    │   ├── done/                                            # chief moves processed images here
+    │   │   └── tribal__docker-fix--2026-02-08.png           # same name — just archived after processing
+    │   └── tribal__api-key--2026-02-09.png         # pending — chief hasn't processed yet
+    ├── tribal__docker-fix--2026-02-08.md                    # matches the image name (.md ext)
+    └── tribal__api-key--2026-02-09.md              # matches the image name (.md ext)
 ```
 
 ### .claude/ Directory Setup
@@ -198,7 +188,7 @@ Every new project gets `.claude/` with two files:
 
 **`.claude/CLAUDE.md`** — project-specific instructions:
 
-```markdown
+```txt
 # {Project Name} — Project Instructions
 
 ## What This Is
@@ -246,11 +236,11 @@ Every new project gets `.claude/` with two files:
 chmod -R 755 .claude/
 ```
 
-- `.claude/CLAUDE.md` — ALWAYS here, NEVER in root
-- `.claude/settings.json` — same standard for every project
-- `chmod -R 755 .claude/` — full read/write/execute permissions on the directory
-- Both files get committed to the repo (`.claude/` is NOT in `.gitignore`)
-- Do NOT create a root-level `CLAUDE.md` — root is reserved for the Keymaster global only
+- ✅ `.claude/CLAUDE.md` — ALWAYS here, NEVER in root
+- ✅ `.claude/settings.json` — same standard for every project
+- ✅ `chmod -R 755 .claude/` — full read/write/execute permissions on the directory
+- ✅ Both files get committed to the repo (`.claude/` is NOT in `.gitignore`)
+- ❌ Do NOT create a root-level `CLAUDE.md` — root is reserved for the Keymaster global only
 
 ### Palette
 
@@ -305,86 +295,30 @@ Add to the project's main CSS file with `@theme`:
 ```
 
 | Role | Name | Primary Hex | Usage |
-|------|------|------------|-------|
+|------|------|-------------|-------|
 | Primary | `steel` | `#4c8bab` | Buttons, links, focus rings, primary actions |
 | Secondary | `rose` | `#fe3557` | Alerts, destructive actions, accents |
 | Tertiary | `sage` | `#636e5b` | Muted backgrounds, secondary text, borders |
 
 **Source:** UI Colors Tailwind CSS Color Generator (uicolors.app) — Palette 17
 
-- Every frontend project uses this palette — no per-project color decisions
-- Tailwind CSS v4 with `@theme` block
-- shadcn/ui components + Lucide React icons
-- The Keymaster owns the palette spec — projects reference it, don't copy it
-- Do NOT invent new colors — use the palette
+- ✅ Every frontend project uses this palette — no per-project color decisions
+- ✅ Tailwind CSS v4 with `@theme` block
+- ✅ shadcn/ui components + Lucide React icons
+- ✅ The Keymaster owns the palette spec — projects reference it, don't copy it
+- ❌ Do NOT invent new colors — use the palette
 
 ---
 
 ### The Three Underscore Directories
 
 | Directory | What goes here | Who writes |
-|-----------|----------------|-----------|
+|-----------|---------------|------------|
 | `_docs/` | Project-specific docs, onboarding, guides | Claude + Flavio |
 | `_specs/` | Specs for anything being built in this project | Claude + Flavio |
 | `_notes/` | Flavio's personal notes | **Flavio ONLY** — stay the fuck out unless directly told |
 
 The `_` prefix sorts them to the top in VS Code so Flavio doesn't have to hunt for them.
-
----
-
-## Step 3.5: Install Tribal Knowledge
-
-Every new project gets the Tribal Knowledge Chief installed as a subdirectory. This is the automated OCR pipeline that turns Slack screenshots into structured markdown.
-
-```bash
-cd ~/Portfolio/dlfn-task
-curl -fsSL https://raw.githubusercontent.com/flavioespinoza/tribal-knowledge/main/install.sh | bash
-```
-
-**What the installer does:**
-
-1. Clones `tribal-knowledge/` into the project root
-2. Runs `npm install` + `npm run build`
-3. Creates `images/` and `images/done/` directories
-4. Creates `README__tribal-knowledge.md` (master report)
-5. Verifies `GOOGLE_APPLICATION_CREDENTIALS` and `GEMINI_API_KEY` env vars
-
-**Required env vars** (should already be in `~/.zkeys`):
-
-```bash
-export GOOGLE_APPLICATION_CREDENTIALS="$HOME/.gcp/service-account.json"
-export GEMINI_API_KEY="your-key-from-aistudio"
-```
-
-**After install, the tribal-knowledge directory contains:**
-
-```
-tribal-knowledge/
-├── src/                                    # Watcher source (TypeScript)
-├── images/                                 # Drop screenshots here
-│   └── done/                               # Chief moves processed images here
-├── README__tribal-knowledge.md             # Master report (auto-updated)
-├── run.sh                                  # Launchd daemon wrapper
-├── install.sh                              # Installer (already ran)
-├── package.json
-└── tsconfig.json
-```
-
-**To start the watcher:**
-
-```bash
-cd tribal-knowledge && npm start
-```
-
-**Or run as a background daemon:**
-
-```bash
-cd tribal-knowledge && ./run.sh
-```
-
-**Pipeline:** Screenshot dropped in `images/` → preprocess → Cloud Vision OCR → Gemini 1.5 Pro analysis → write `.md` → move image to `images/done/` → update master report → fire alert + clipboard.
-
-**Repo:** [github.com/flavioespinoza/tribal-knowledge](https://github.com/flavioespinoza/tribal-knowledge)
 
 ---
 
@@ -434,17 +368,17 @@ Create `_docs/doc__onboarding--dlfn.md` with:
 
 The chief renames everything on extraction. No CleanShot garbage. No date-first filenames.
 
-```
+```txt
 tribal__{topic}--{YYYY-MM-DD}.png    # Image
 tribal__{topic}--{YYYY-MM-DD}.md     # Matching markdown (same name, different ext)
 README__tribal-knowledge.md           # Master report
 ```
 
-- Image and markdown share the exact same name
-- Block = `tribal__`, Element = topic (kebab-case), Modifier = date
-- Master report is `README__tribal-knowledge.md`
-- No raw CleanShot filenames
-- No date-first filenames — topic first, date is the modifier
+- ✅ Image and markdown share the exact same name
+- ✅ Block = `tribal__`, Element = topic (kebab-case), Modifier = date
+- ✅ Master report is `README__tribal-knowledge.md`
+- ❌ No raw CleanShot filenames
+- ❌ No date-first filenames — topic first, date is the modifier
 
 ---
 
@@ -452,7 +386,7 @@ README__tribal-knowledge.md           # Master report
 
 All files inside the project follow the same global rules (Commandment #6 BEM for markdown, kebab-case for directories). Project-specific prefixes use the 4-letter alias:
 
-```
+```txt
 dlfn__task-1234__assessment.md
 dlfn__task-1234__submission--2026-02-08--1430-mst.md
 dlfn__task-1234__turns.md
@@ -462,6 +396,6 @@ dlfn__task-1234__turns.md
 
 ## Open Questions
 
-1. Should each project get a project-specific CLAUDE.md, or just rely on globals? **RESOLVED:** Every project gets `.claude/CLAUDE.md`. Globals come from `~/.claude/CLAUDE.md` (Keymaster).
-2. Should the tribal-knowledge directory be pre-created, or only when the chief is ready? **RESOLVED:** Tribal Knowledge is installed per-project via `install.sh`. Run it after Step 3 (repo creation). The installer clones the repo, builds, and sets up the full directory structure.
+1. ~~Should each project get a project-specific CLAUDE.md, or just rely on globals?~~ **RESOLVED:** Every project gets `.claude/CLAUDE.md`. Globals come from `~/.claude/CLAUDE.md` (Keymaster).
+2. Should the tribal-knowledge directory be pre-created, or only when the chief is ready?
 3. Does the Keymaster auto-create repos via script, or is it always manual + spec?

@@ -42,7 +42,7 @@ Respond with ONLY valid JSON matching this schema:
  */
 export async function analyzeText(rawText: string): Promise<AnalysisResult> {
   const response = await ai.models.generateContent({
-    model: "gemini-1.5-pro",
+    model: "gemini-2.5-flash",
     contents: [
       {
         role: "user",
