@@ -1,69 +1,82 @@
-import { execFile } from "node:child_process";
-import { existsSync } from "node:fs";
-import { promisify } from "node:util";
-import path from "node:path";
+import { execFile, spawn, type ChildProcess } from 'node:child_process'
+import { promisify } from 'node:util'
+import path from 'node:path'
+import os from 'node:os'
 
-const execFileAsync = promisify(execFile);
+const execFileAsync = promisify(execFile)
 
-/** Path to the bundled Indian drums sound file */
-const DRUMS_SOUND = path.resolve(
-  import.meta.dirname ?? path.dirname(new URL(import.meta.url).pathname),
-  "..",
-  "sounds",
-  "indian_drums.wav"
-);
+const DRUMS_PATH = path.join(
+	os.homedir(),
+	'.claude',
+	'alerts',
+	'sounds',
+	'indian-drums.m4a'
+)
 
 /**
- * Fires the success alert directly — plays Indian drums via afplay
- * and shows a macOS notification via osascript. No signal files, no consumer.
+ * Plays indian drums audio via afplay (non-blocking).
+ * Returns the child process so it can be killed when the popup is dismissed.
  */
-export async function fireAlert(
-  _sourceImage: string,
-  outputFile: string
-): Promise<void> {
-  const topic = path.basename(outputFile, ".md");
-  const message = `New tribal knowledge: ${topic}`;
-
-  // Play Indian drums sound (non-blocking — don't await so pipeline isn't held up)
-  if (existsSync(DRUMS_SOUND)) {
-    execFileAsync("afplay", [DRUMS_SOUND]).catch((err) => {
-      console.error("[alert] afplay failed:", err);
-    });
-    console.log(`[alert] Playing drums: ${DRUMS_SOUND}`);
-  } else {
-    console.warn(`[alert] Drums sound file not found: ${DRUMS_SOUND}`);
-  }
-
-  // Show macOS notification popup
-  try {
-    await execFileAsync("osascript", [
-      "-e",
-      `display notification "${message}" with title "Tribal Chief" sound name "default"`,
-    ]);
-    console.log(`[alert] Notification shown: ${message}`);
-  } catch (err) {
-    // osascript not available (Linux, CI, etc.)
-    console.log(`[alert] Notification (osascript unavailable): ${message}`);
-  }
+function playDrums(): ChildProcess {
+	const child = spawn('afplay', [DRUMS_PATH], { stdio: 'ignore' })
+	console.log('[alert] Playing drums audio')
+	return child
 }
 
 /**
- * Copies a ready-to-paste message to the system clipboard via pbcopy.
- * Message format: New tribal knowledge: {full_path} — ## {section_heading}
+ * Shows a BLOCKING native macOS popup via osascript.
+ * The popup stays on screen until Flavio clicks OK.
+ * Returns when the popup is dismissed.
  */
-export async function copyToClipboard(
-  filePath: string,
-  heading: string
+async function showPopup(filename: string): Promise<void> {
+	const script = `display alert "Tribal Knowledge" message "New tribal knowledge processed:\\n\\n${filename}" buttons {"OK"} default button "OK"`
+	await execFileAsync('osascript', ['-e', script])
+	console.log('[alert] Popup dismissed')
+}
+
+/**
+ * Copies a message to the system clipboard via pbcopy.
+ */
+async function copyToClipboard(message: string): Promise<void> {
+	const child = execFileAsync('pbcopy')
+	child.child.stdin?.write(message, 'utf-8')
+	child.child.stdin?.end()
+	await child
+	console.log(`[alert] Copied to clipboard: ${message}`)
+}
+
+/**
+ * Post-processing alert: drums + blocking popup + clipboard on dismiss.
+ *
+ * Flow:
+ * 1. Play indian drums audio (non-blocking)
+ * 2. Show native macOS alert (BLOCKING — waits for OK)
+ * 3. After OK is clicked, kill drums + copy message to clipboard
+ */
+export async function fireAlert(
+	mdFilePath: string,
+	heading: string
 ): Promise<void> {
-  const message = `New tribal knowledge: ${filePath} — ## ${heading}`;
-  try {
-    const child = execFileAsync("pbcopy");
-    child.child.stdin?.write(message);
-    child.child.stdin?.end();
-    await child;
-    console.log(`[alert] Copied to clipboard: ${message}`);
-  } catch {
-    // pbcopy not available (Linux, CI, etc.) — log instead
-    console.log(`[alert] Clipboard message (pbcopy unavailable): ${message}`);
-  }
+	const filename = path.basename(mdFilePath)
+	const clipboardMessage = `New tribal knowledge: ${mdFilePath} -- ## ${heading}`
+
+	let drumsProcess: ChildProcess | null = null
+
+	try {
+		// Play drums alongside the popup
+		drumsProcess = playDrums()
+
+		// Blocking popup — waits until Flavio clicks OK
+		await showPopup(filename)
+
+		// Kill drums immediately on dismiss
+		drumsProcess.kill()
+		console.log('[alert] Drums stopped')
+
+		// After dismiss — copy to clipboard
+		await copyToClipboard(clipboardMessage)
+	} catch (err) {
+		drumsProcess?.kill()
+		console.error('[alert] Alert failed:', err)
+	}
 }

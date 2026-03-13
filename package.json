@@ -1,7 +1,7 @@
 {
   "name": "tribal-knowledge",
   "version": "1.0.0",
-  "description": "TypeScript file watcher that OCRs Slack screenshots, extracts conversation text via Google Cloud Vision, summarizes via Gemini 1.5 Pro, and writes structured markdown files. Runs as a launchd daemon per-project.",
+  "description": "TypeScript file watcher that OCRs Slack screenshots via Gemini Vision, structures via Gemini 2.5 Flash, and writes markdown. Engine runs from this repo, output goes to target project.",
   "type": "module",
   "main": "dist/watcher.js",
   "scripts": {

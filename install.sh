@@ -2,28 +2,25 @@
 # ============================================================================
 # Tribal Knowledge — Install Script
 # ============================================================================
-# Installs the Tribal Knowledge Chief into any project.
+# Creates the lean tribal-knowledge OUTPUT directory inside any project.
+# Does NOT clone the engine — just the directory structure + README index.
+#
+# The engine stays at ~/Portfolio/tribal-knowledge/ and watches remotely.
 #
 # Usage:
 #   cd ~/Portfolio/dlfn-task
-#   curl -fsSL https://raw.githubusercontent.com/flavioespinoza/tribal-knowledge/main/install.sh | bash
+#   bash ~/Portfolio/tribal-knowledge/install.sh
 #
 #   — or —
 #
 #   cd ~/Portfolio/dlfn-task
-#   bash <(curl -fsSL https://raw.githubusercontent.com/flavioespinoza/tribal-knowledge/main/install.sh)
-#
-#   — or (if already cloned) —
-#
-#   cd ~/Portfolio/dlfn-task
-#   bash /path/to/tribal-knowledge/install.sh
+#   curl -fsSL https://raw.githubusercontent.com/flavioespinoza/tribal-knowledge/main/install.sh | bash
 # ============================================================================
 
 set -euo pipefail
 
-REPO="git@github.com:flavioespinoza/tribal-knowledge.git"
-BRANCH="main"
 TARGET_DIR="tribal-knowledge"
+ENGINE_DIR="$HOME/Portfolio/tribal-knowledge"
 
 # ---------------------------------------------------------------------------
 # Detect project root (must be run from a project directory)
@@ -38,57 +35,61 @@ if [[ ! -f "$PROJECT_ROOT/package.json" && ! -d "$PROJECT_ROOT/.git" ]]; then
 fi
 
 echo ""
-echo "[install] Tribal Knowledge Chief"
+echo "[install] Tribal Knowledge — Lean Setup"
 echo "[install] Project:  $PROJECT_NAME"
 echo "[install] Target:   $PROJECT_ROOT/$TARGET_DIR/"
 echo ""
 
 # ---------------------------------------------------------------------------
-# Clone or update
+# Create directory structure (output only — no engine, no node_modules)
 # ---------------------------------------------------------------------------
-if [[ -d "$PROJECT_ROOT/$TARGET_DIR/.git" ]]; then
-  echo "[install] Found existing tribal-knowledge — pulling latest..."
-  cd "$PROJECT_ROOT/$TARGET_DIR"
-  git pull origin "$BRANCH"
-else
-  if [[ -d "$PROJECT_ROOT/$TARGET_DIR" ]]; then
-    echo "[install] ERROR: $TARGET_DIR/ exists but is not a git repo."
-    echo "          Remove it first: rm -rf $TARGET_DIR"
-    exit 1
-  fi
-  echo "[install] Cloning tribal-knowledge into $TARGET_DIR/..."
-  git clone "$REPO" "$PROJECT_ROOT/$TARGET_DIR"
-fi
+mkdir -p "$PROJECT_ROOT/$TARGET_DIR/images/done"
 
-cd "$PROJECT_ROOT/$TARGET_DIR"
+echo "[install] Created: $TARGET_DIR/"
+echo "[install] Created: $TARGET_DIR/images/"
+echo "[install] Created: $TARGET_DIR/images/done/"
 
 # ---------------------------------------------------------------------------
-# Install deps + build
+# README index
 # ---------------------------------------------------------------------------
-echo "[install] Installing dependencies..."
-npm install
+if [[ ! -f "$PROJECT_ROOT/$TARGET_DIR/README__tribal-knowledge.md" ]]; then
+  cat > "$PROJECT_ROOT/$TARGET_DIR/README__tribal-knowledge.md" << MASTER_EOF
+# Tribal Knowledge — $PROJECT_NAME
 
-echo "[install] Building TypeScript..."
-npm run build
+Undocumented tips, Slack screenshots, and platform-specific knowledge that isn't in any official doc.
 
-# ---------------------------------------------------------------------------
-# Create directory structure per keymaster spec
-# ---------------------------------------------------------------------------
-echo "[install] Setting up directory structure..."
-mkdir -p images/done
+## How This Works
 
-# Master report
-if [[ ! -f "README__tribal-knowledge.md" ]]; then
-  cat > "README__tribal-knowledge.md" << 'MASTER_EOF'
-# Tribal Knowledge — Master Report
+1. Flavio drops a screenshot into \`tribal-knowledge/images/\` (any name, any format)
+2. The watcher renames the image: \`tribal__screenshot--{YYYY-MM-DD}__{timestamp}.png\`
+3. The watcher creates a matching \`.md\` file with a **VERBATIM** transcription
+4. Processed image moves to \`images/done/\`
+5. The \`.md\` file stays in \`tribal-knowledge/\` root
+6. This README index gets updated with the new entry
 
-> Auto-updated by the Tribal Knowledge Chief.
+## Naming Convention
 
-## Entries
+\`\`\`txt
+tribal__screenshot--{YYYY-MM-DD}__{timestamp}.png    # Original image (moves to images/done/)
+tribal__screenshot--{YYYY-MM-DD}__{timestamp}.md     # Verbatim transcription (stays in root)
+\`\`\`
 
-_No entries yet. Drop a screenshot into `images/` to get started._
+## Directory Structure
+
+\`\`\`txt
+tribal-knowledge/
+├── README__tribal-knowledge.md              ← this file (index)
+├── tribal__screenshot--2026-03-11__1773265603682.md
+├── images/
+│   └── done/
+│       └── tribal__screenshot--2026-03-11__1773265603682.png
+\`\`\`
+
+## Index
+
+_No entries yet. Drop a screenshot into \`images/\` to get started._
 MASTER_EOF
-  echo "[install] Created README__tribal-knowledge.md"
+  echo "[install] Created: README__tribal-knowledge.md"
 fi
 
 # ---------------------------------------------------------------------------
@@ -96,12 +97,6 @@ fi
 # ---------------------------------------------------------------------------
 echo ""
 MISSING_ENV=0
-
-if [[ -z "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
-  echo "[install] WARNING: GOOGLE_APPLICATION_CREDENTIALS is not set."
-  echo "          Add to ~/.zkeys: export GOOGLE_APPLICATION_CREDENTIALS=\"\$HOME/.gcp/service-account.json\""
-  MISSING_ENV=1
-fi
 
 if [[ -z "${GEMINI_API_KEY:-}" ]]; then
   echo "[install] WARNING: GEMINI_API_KEY is not set."
@@ -117,15 +112,12 @@ fi
 # Done
 # ---------------------------------------------------------------------------
 echo ""
-echo "[install] Done! Tribal Knowledge Chief installed in:"
+echo "[install] Done! Tribal Knowledge output directory ready:"
 echo "          $PROJECT_ROOT/$TARGET_DIR/"
 echo ""
-echo "  Start the watcher:"
-echo "    cd $TARGET_DIR && npm start"
-echo ""
-echo "  Or run as daemon:"
-echo "    cd $TARGET_DIR && ./run.sh"
+echo "  Start the watcher (from the engine repo):"
+echo "    cd $ENGINE_DIR && npm start -- $PROJECT_ROOT/$TARGET_DIR"
 echo ""
 echo "  Drop screenshots into:"
-echo "    $TARGET_DIR/images/"
+echo "    $PROJECT_ROOT/$TARGET_DIR/images/"
 echo ""

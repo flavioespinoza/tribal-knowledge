@@ -1,6 +1,6 @@
 # SPEC: Template — New Project
 
-v5 | Mar 11 2026 - 11:30 PM (MST)
+v6 | Mar 11 2026 - 11:55 PM (MST)
 
 ## Purpose
 
@@ -159,6 +159,9 @@ Every project's README must include a link at the top to **Flavio's Preferred Id
 ```txt
 dlfn-task/
 ├── README.md                                                # Commandment #17 template + Step 2 answers
+├── NOTES.md                                                 # Persistent scratchpad — survives across sessions
+├── TEMP.md                                                  # Throwaway scratch — can be wiped any time
+├── TODO.md                                                  # Active task list — what needs doing NOW
 ├── .gitignore                                               # Commandment #17 template
 ├── .prettierrc                                              # Standard Prettier config
 ├── tsconfig.json                                            # Standard TypeScript config
@@ -181,6 +184,22 @@ dlfn-task/
     ├── tribal__docker-fix--2026-02-08.md                    # matches the image name (.md ext)
     └── tribal__api-key--2026-02-09.md              # matches the image name (.md ext)
 ```
+
+### ALLCAPS Markdown Files
+
+Every project gets these root-level ALLCAPS markdown files. They are exceptions to FX naming (Commandment #6 says ALLCAPS files stay as-is: CLAUDE.md, README.md, TEMP.md, NOTES.md, TODO.md).
+
+| File | Purpose | Persistence |
+|------|---------|-------------|
+| `README.md` | Project overview — what it is, how to run it, structure | Permanent |
+| `NOTES.md` | Persistent scratchpad for ideas, observations, context that survives across sessions | Permanent |
+| `TEMP.md` | Throwaway scratch space — paste dumps, quick calcs, draft text. Can be wiped any time | Ephemeral |
+| `TODO.md` | Active task list — what needs doing NOW. Items get checked off and removed as they're done | Rolling |
+
+- ✅ All four are created on project init — even if empty
+- ✅ `NOTES.md` and `TEMP.md` are Flavio's space — don't edit unless told
+- ✅ `TODO.md` can be updated by Claude when Flavio says "add to TODO" or "update TODO"
+- ❌ Do NOT use FX naming on these — they stay ALLCAPS at root
 
 ### .claude/ Directory Setup
 
