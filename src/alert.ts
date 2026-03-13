@@ -1,47 +1,49 @@
-import { writeFile, mkdir } from "node:fs/promises";
 import { execFile } from "node:child_process";
+import { existsSync } from "node:fs";
 import { promisify } from "node:util";
 import path from "node:path";
-import os from "node:os";
 
 const execFileAsync = promisify(execFile);
 
-const ALERTS_DIR = path.join(os.homedir(), ".claude", "alerts", "pending");
-
-interface AlertSignal {
-  type: "tribal_knowledge";
-  sound: "indian_drums";
-  message: string;
-  source_image: string;
-  output_file: string;
-  created: string;
-}
+/** Path to the bundled Indian drums sound file */
+const DRUMS_SOUND = path.resolve(
+  import.meta.dirname ?? path.dirname(new URL(import.meta.url).pathname),
+  "..",
+  "sounds",
+  "indian_drums.wav"
+);
 
 /**
- * Writes a signal file for the Flavio Alert extension.
- * The extension picks it up, plays indian drums audio, and shows a popup.
+ * Fires the success alert directly — plays Indian drums via afplay
+ * and shows a macOS notification via osascript. No signal files, no consumer.
  */
 export async function fireAlert(
-  sourceImage: string,
+  _sourceImage: string,
   outputFile: string
 ): Promise<void> {
+  const topic = path.basename(outputFile, ".md");
+  const message = `New tribal knowledge: ${topic}`;
+
+  // Play Indian drums sound (non-blocking — don't await so pipeline isn't held up)
+  if (existsSync(DRUMS_SOUND)) {
+    execFileAsync("afplay", [DRUMS_SOUND]).catch((err) => {
+      console.error("[alert] afplay failed:", err);
+    });
+    console.log(`[alert] Playing drums: ${DRUMS_SOUND}`);
+  } else {
+    console.warn(`[alert] Drums sound file not found: ${DRUMS_SOUND}`);
+  }
+
+  // Show macOS notification popup
   try {
-    await mkdir(ALERTS_DIR, { recursive: true });
-
-    const signal: AlertSignal = {
-      type: "tribal_knowledge",
-      sound: "indian_drums",
-      message: "New tribal knowledge processed",
-      source_image: path.basename(sourceImage),
-      output_file: path.basename(outputFile),
-      created: new Date().toISOString(),
-    };
-
-    const alertPath = path.join(ALERTS_DIR, `alert-${Date.now()}.json`);
-    await writeFile(alertPath, JSON.stringify(signal, null, 2), "utf-8");
-    console.log(`[alert] Signal written: ${alertPath}`);
+    await execFileAsync("osascript", [
+      "-e",
+      `display notification "${message}" with title "Tribal Chief" sound name "default"`,
+    ]);
+    console.log(`[alert] Notification shown: ${message}`);
   } catch (err) {
-    console.error("[alert] Failed to write alert signal:", err);
+    // osascript not available (Linux, CI, etc.)
+    console.log(`[alert] Notification (osascript unavailable): ${message}`);
   }
 }
 
