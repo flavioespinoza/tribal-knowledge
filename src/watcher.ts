@@ -15,6 +15,9 @@ const OUTPUT_DIR = PROJECT_ROOT;
 
 const SUPPORTED_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".webp"]);
 
+/** Tracks files currently being processed to prevent re-entrant runs */
+const processing = new Set<string>();
+
 /**
  * Process a single image through the full pipeline:
  * 1. Preprocess (compression if >10MB)
@@ -25,6 +28,15 @@ const SUPPORTED_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".webp"]);
  */
 async function processImage(imagePath: string): Promise<void> {
   const filename = path.basename(imagePath);
+
+  // Guard: skip if this file (or its preprocessed variant) is already in-flight
+  const baseName = path.basename(imagePath, path.extname(imagePath));
+  if (processing.has(baseName)) {
+    console.log(`[watcher] Skipping (already processing): ${filename}`);
+    return;
+  }
+  processing.add(baseName);
+
   console.log(`\n[watcher] New image detected: ${filename}`);
   console.log("[watcher] Starting pipeline...");
 
@@ -59,6 +71,17 @@ async function processImage(imagePath: string): Promise<void> {
     await rename(imagePath, donePath);
     console.log(`[pipeline] Moved image to: ${donePath}`);
 
+    // If preprocess created a separate JPEG, move that too
+    if (processedPath !== imagePath) {
+      const doneProcessed = path.join(
+        IMAGES_DONE_DIR,
+        path.basename(processedPath)
+      );
+      await rename(processedPath, doneProcessed).catch(() => {
+        /* already moved or same file */
+      });
+    }
+
     // Update master report
     await updateMasterReport(OUTPUT_DIR, analysis, imagePath, filePath);
 
@@ -69,6 +92,8 @@ async function processImage(imagePath: string): Promise<void> {
     console.log(`[watcher] Pipeline complete: ${filePath}`);
   } catch (err) {
     console.error(`[watcher] Pipeline failed for ${filename}:`, err);
+  } finally {
+    processing.delete(baseName);
   }
 }
 
@@ -79,6 +104,8 @@ function start(): void {
 
   const watcher = chokidar.watch(IMAGES_DIR, {
     ignoreInitial: true,
+    ignored: [IMAGES_DONE_DIR],
+    depth: 0,
     awaitWriteFinish: {
       stabilityThreshold: 1000,
       pollInterval: 200,
