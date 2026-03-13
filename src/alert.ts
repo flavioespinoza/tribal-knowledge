@@ -36,9 +36,18 @@ async function showPopup(filename: string): Promise<void> {
 
 /**
  * Copies a message to the system clipboard via pbcopy.
+ *
+ * pbcopy with LANG/LC_CTYPE set performs encoding conversion (UTF-8 → Mac Roman),
+ * which mangles multi-byte characters like … (U+2026) into the Mac Roman byte C9.
+ * Stripping locale vars from pbcopy's env prevents that conversion — pbcopy then
+ * treats stdin as raw bytes and the UTF-8 passes through intact.
  */
 async function copyToClipboard(message: string): Promise<void> {
-	const child = execFileAsync('pbcopy')
+	const env = { ...process.env }
+	delete env.LANG
+	delete env.LC_ALL
+	delete env.LC_CTYPE
+	const child = execFileAsync('pbcopy', [], { env })
 	child.child.stdin?.write(message, 'utf-8')
 	child.child.stdin?.end()
 	await child
